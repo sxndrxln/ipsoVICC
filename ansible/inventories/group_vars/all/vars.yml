@@ -1,0 +1,31 @@
+---
+ansible_user: ansible
+ansible_ssh_extra_args: '-o StrictHostKeyChecking=accept-new'
+
+## Proxmox API
+proxmox_api_host: "{{ vault_proxmox_api_host }}"
+proxmox_api_user: "{{ vault_proxmox_api_user }}"
+proxmox_api_password: "{{ vault_proxmox_api_password }}"
+proxmox_node: srv01
+proxmox_validate_certs: false
+
+## Cloud-init template
+proxmox_vm_template_vmid: 9000
+proxmox_vm_template_name: ubuntu-2404-cloudinit
+proxmox_vm_cloud_image_url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+proxmox_vm_template_storage: DATA
+proxmox_vm_bridge: vmbr0
+
+## VM disks: OS on local-lvm, /opt on DATA (same layout as the LXC containers)
+proxmox_vm_storage: local-lvm
+proxmox_vm_data_storage: DATA
+
+## Network layout
+proxmox_vm_native_vlan: 40
+proxmox_vm_vlans:
+  40:
+    gateway: "{{ vault_proxmox_vm_vlans[40].gateway }}"
+    netmask: "{{ vault_proxmox_vm_vlans[40].netmask }}"
+  50:
+    gateway: "{{ vault_proxmox_vm_vlans[50].gateway }}"
+    netmask: "{{ vault_proxmox_vm_vlans[50].netmask }}"

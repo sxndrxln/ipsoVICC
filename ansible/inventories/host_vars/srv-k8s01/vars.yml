@@ -1,0 +1,13 @@
+---
+# Proxmox VM
+proxmox_vm_vmid: 120
+proxmox_vm_vlan: 50
+proxmox_vm_cores: 2
+proxmox_vm_memory: 4096
+proxmox_vm_disk: 15
+# Second disk on proxmox_vm_data_storage, mounted at /opt
+proxmox_vm_data_disk: 20
+proxmox_vm_ci_user: "{{ ansible_user }}"
+proxmox_vm_ci_ssh_public_key: "{{ vault_ansible_ssh_public_key }}"
+proxmox_vm_srvk8s01_ip: "{{ vault_proxmox_vm_srvk8s01_ip }}"
+proxmox_vm_nameserver: "{{ vault_proxmox_vm_nameserver }}"

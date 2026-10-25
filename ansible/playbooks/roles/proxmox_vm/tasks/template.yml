@@ -1,0 +1,41 @@
+---
+- name: Check if template already exists
+  ansible.builtin.command: "qm config {{ proxmox_vm_template_vmid }}"
+  register: proxmox_vm_template_config
+  changed_when: false
+  failed_when: false
+
+- name: Create cloud-init template
+  when: proxmox_vm_template_config.rc != 0
+  block:
+    - name: Download Ubuntu cloud image
+      ansible.builtin.get_url:
+        url: "{{ proxmox_vm_cloud_image_url }}"
+        dest: "{{ proxmox_vm_cloud_image_dest }}"
+        mode: "0644"
+
+    - name: Create template VM with imported disk
+      ansible.builtin.command: >-
+        qm create {{ proxmox_vm_template_vmid }}
+        --name {{ proxmox_vm_template_name }}
+        --ostype l26
+        --memory 2048
+        --cores 2
+        --net0 virtio,bridge={{ proxmox_vm_bridge }}
+        --scsihw virtio-scsi-single
+        --scsi0 {{ proxmox_vm_template_storage }}:0,import-from={{ proxmox_vm_cloud_image_dest }},discard=on,ssd=1
+        --ide2 {{ proxmox_vm_template_storage }}:cloudinit
+        --boot order=scsi0
+        --serial0 socket
+        --vga serial0
+        --agent enabled=1
+      changed_when: true
+
+    - name: Convert VM to template
+      ansible.builtin.command: "qm template {{ proxmox_vm_template_vmid }}"
+      changed_when: true
+
+    - name: Remove downloaded cloud image
+      ansible.builtin.file:
+        path: "{{ proxmox_vm_cloud_image_dest }}"
+        state: absent

@@ -1,0 +1,50 @@
+# Demo application inventory
+apps:
+  - name: WordPress
+    category: CMS
+    cpe: "cpe:2.3:a:wordpress:wordpress"
+    version: "6.4.1"
+  - name: AdGuard Home
+    category: DNS filter
+    cpe: "cpe:2.3:a:adguard:adguardhome"
+    version: "0.107.40"
+  - name: Hyper-V (Windows Server 2019)
+    category: Hypervisor
+    cpe: "cpe:2.3:o:microsoft:windows_server_2019"
+    version: "10.0.17763.4974"
+  - name: nginx
+    category: Web server
+    cpe: "cpe:2.3:a:f5:nginx"
+    version: "1.24.0"
+  - name: MongoDB
+    category: Database
+    cpe: "cpe:2.3:a:mongodb:mongodb"
+    version: "6.0.5"
+  - name: Apache HTTP Server
+    category: Web server
+    cpe: "cpe:2.3:a:apache:http_server"
+    version: "2.4.57"
+  - name: OpenSSH
+    category: Remote access
+    cpe: "cpe:2.3:a:openbsd:openssh"
+    version: "9.3"
+  - name: PostgreSQL
+    category: Database
+    cpe: "cpe:2.3:a:postgresql:postgresql"
+    version: "15.4"
+  - name: Grafana
+    category: Monitoring
+    cpe: "cpe:2.3:a:grafana:grafana"
+    version: "10.0.0"
+  - name: Jenkins
+    category: CI/CD
+    cpe: "cpe:2.3:a:jenkins:jenkins"
+    version: "2.426"
+  - name: Nextcloud Server
+    category: Collaboration
+    cpe: "cpe:2.3:a:nextcloud:nextcloud_server"
+    version: "27.0.0"
+  - name: GitLab
+    category: DevOps platform
+    cpe: "cpe:2.3:a:gitlab:gitlab"
+    version: "16.5.0"

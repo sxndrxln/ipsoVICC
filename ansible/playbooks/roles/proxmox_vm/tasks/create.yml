@@ -1,0 +1,184 @@
+---
+- name: Validate VM settings
+  ansible.builtin.assert:
+    that:
+      - proxmox_vm_vmid is defined
+      - (proxmox_vm_vlan | int) in proxmox_vm_vlans
+    fail_msg: >-
+      {{ inventory_hostname }} needs proxmox_vm_vmid, and VLAN {{ proxmox_vm_vlan }}
+      must be defined in proxmox_vm_vlans.
+    quiet: true
+
+- name: Derive network settings from VLAN
+  ansible.builtin.set_fact:
+    proxmox_vm_net: "{{ proxmox_vm_vlans[proxmox_vm_vlan | int] }}"
+    proxmox_vm_tag: "{{ omit if (proxmox_vm_vlan | int) == (proxmox_vm_native_vlan | int) else (proxmox_vm_vlan | int) }}"
+
+- name: Look up existing VM with this VMID
+  community.proxmox.proxmox_vm_info:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_password: "{{ proxmox_api_password }}"
+    validate_certs: "{{ proxmox_validate_certs }}"
+    node: "{{ proxmox_node }}"
+    vmid: "{{ proxmox_vm_vmid }}"
+  register: proxmox_vm_existing
+  delegate_to: localhost
+  become: false
+
+- name: Ensure VMID is free or belongs to this host
+  ansible.builtin.assert:
+    that:
+      - proxmox_vm_existing.proxmox_vms | length == 0 or proxmox_vm_existing.proxmox_vms[0].name == inventory_hostname
+    fail_msg: "VMID {{ proxmox_vm_vmid }} is already used by {{ proxmox_vm_existing.proxmox_vms[0].name | default('?') }}"
+    quiet: true
+
+- name: Clone and configure VM
+  when: proxmox_vm_existing.proxmox_vms | length == 0
+  delegate_to: localhost
+  become: false
+  block:
+    - name: Look up cloud-init template
+      community.proxmox.proxmox_vm_info:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password }}"
+        validate_certs: "{{ proxmox_validate_certs }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ proxmox_vm_template_vmid }}"
+      register: proxmox_vm_template
+
+    - name: Ensure cloud-init template exists
+      ansible.builtin.assert:
+        that:
+          - proxmox_vm_template.proxmox_vms | length > 0
+        fail_msg: >-
+          Template {{ proxmox_vm_template_vmid }} does not exist —
+          run the playbook without tags or with --tags template first.
+        quiet: true
+
+    - name: Clone VM from cloud-init template
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password }}"
+        validate_certs: "{{ proxmox_validate_certs }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ proxmox_vm_template_vmid }}"
+        clone: "{{ proxmox_vm_template_name }}"
+        newid: "{{ proxmox_vm_vmid }}"
+        name: "{{ inventory_hostname }}"
+        full: true
+        storage: "{{ proxmox_vm_storage }}"
+        format: raw
+        timeout: 600
+
+    - name: Set resources and cloud-init settings
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password }}"
+        validate_certs: "{{ proxmox_validate_certs }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ proxmox_vm_vmid }}"
+        name: "{{ inventory_hostname }}"
+        update: true
+        cores: "{{ proxmox_vm_cores }}"
+        memory: "{{ proxmox_vm_memory }}"
+        onboot: "{{ proxmox_vm_onboot }}"
+        ciuser: "{{ proxmox_vm_ci_user }}"
+        sshkeys: "{{ proxmox_vm_ci_ssh_public_key }}"
+        nameservers: "{{ proxmox_vm_nameserver | default(omit, true) }}"
+        ipconfig:
+          ipconfig0: "ip={{ ansible_host }}/{{ proxmox_vm_net.netmask }},gw={{ proxmox_vm_net.gateway }}"
+
+    - name: Attach NIC to VLAN
+      community.proxmox.proxmox_nic:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password }}"
+        validate_certs: "{{ proxmox_validate_certs }}"
+        vmid: "{{ proxmox_vm_vmid }}"
+        interface: net0
+        model: virtio
+        bridge: "{{ proxmox_vm_bridge }}"
+        tag: "{{ proxmox_vm_tag }}"
+
+    - name: Grow system disk
+      community.proxmox.proxmox_disk:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password }}"
+        validate_certs: "{{ proxmox_validate_certs }}"
+        vmid: "{{ proxmox_vm_vmid }}"
+        disk: scsi0
+        size: "{{ proxmox_vm_disk }}G"
+        state: resized
+
+- name: Add data disk
+  when: proxmox_vm_data_disk | int > 0
+  community.proxmox.proxmox_disk:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_password: "{{ proxmox_api_password }}"
+    validate_certs: "{{ proxmox_validate_certs }}"
+    vmid: "{{ proxmox_vm_vmid }}"
+    disk: scsi1
+    storage: "{{ proxmox_vm_data_storage }}"
+    size: "{{ proxmox_vm_data_disk | int }}"
+    discard: "on"
+    ssd: true
+    state: present
+  delegate_to: localhost
+  become: false
+
+- name: Start VM
+  community.proxmox.proxmox_kvm:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_password: "{{ proxmox_api_password }}"
+    validate_certs: "{{ proxmox_validate_certs }}"
+    node: "{{ proxmox_node }}"
+    vmid: "{{ proxmox_vm_vmid }}"
+    state: started
+  delegate_to: localhost
+  become: false
+
+- name: Wait until cloud-init has created the user and SSH is up
+  ansible.builtin.wait_for_connection:
+    timeout: 300
+
+- name: Wait for cloud-init to finish
+  ansible.builtin.command: cloud-init status --wait
+  register: proxmox_vm_cloud_init
+  changed_when: false
+  failed_when: proxmox_vm_cloud_init.rc not in [0, 2]
+
+- name: Prepare data disk
+  when: proxmox_vm_data_disk | int > 0
+  become: true
+  block:
+    - name: Create filesystem on data disk
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1
+
+    - name: Mount data disk
+      ansible.posix.mount:
+        path: "{{ proxmox_vm_data_mount }}"
+        src: /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1
+        fstype: ext4
+        opts: defaults,discard
+        state: mounted
+
+- name: Install QEMU guest agent
+  become: true
+  ansible.builtin.apt:
+    name: qemu-guest-agent
+    update_cache: true
+
+- name: Start QEMU guest agent
+  become: true
+  ansible.builtin.service:
+    name: qemu-guest-agent
+    state: started

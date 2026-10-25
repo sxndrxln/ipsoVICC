@@ -1,0 +1,7 @@
+---
+galaxy_info:
+  author: sxndrxln
+  description: Creates an Ubuntu cloud-init template on Proxmox VE and clones VMs from it
+  license: MIT
+  min_ansible_version: "2.17"
+dependencies: []

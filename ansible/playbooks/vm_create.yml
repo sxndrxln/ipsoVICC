@@ -1,0 +1,15 @@
+---
+- name: Download the latest Ubuntu 24.04 cloud image
+  hosts: proxmox
+  become: true
+  tags: [template]
+  roles:
+    - proxmox_vm
+
+- name: Create VM with the latest Ubuntu 24.04 cloud image
+  hosts: vms
+  gather_facts: false
+  become: true
+  tags: [create]
+  roles:
+    - proxmox_vm

@@ -1,0 +1,10 @@
+---
+- name: Build cloud-init template
+  ansible.builtin.import_tasks: template.yml
+  when: "'proxmox' in group_names"
+  tags: [template]
+
+- name: Create VM
+  ansible.builtin.import_tasks: create.yml
+  when: "'vms' in group_names"
+  tags: [create]
