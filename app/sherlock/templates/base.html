@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>{% block title %}sherlock{% endblock %} · sherlock</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="stylesheet" href="/static/style.css?v={{ version }}">
+  <script src="/static/dropdown.js?v={{ version }}" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">
+    <img src="/static/logo.png" alt="" width="40" height="40">
+    sherlock
+  </a>
+  <nav>
+    <a href="/" {% if page_name == 'open' %}aria-current="page"{% endif %}>Offen</a>
+    <a href="/history" {% if page_name == 'history' %}aria-current="page"{% endif %}>History</a>
+    <a href="/apps" {% if page_name == 'apps' %}aria-current="page"{% endif %}>Applikationen</a>
+    <a href="/docs">API</a>
+  </nav>
+</header>
+
+<main>
+  {% if not last_sync %}
+    <p class="notice">Noch kein Sync gelaufen – die Daten erscheinen nach dem ersten Abgleich mit der NVD.</p>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <p>
+    {% if last_sync %}
+      Letzter Sync: {{ last_sync.started_at[:16] | replace('T', ' ') }} UTC –
+      {% if last_sync.status == 'ok' %}erfolgreich{% elif last_sync.status == 'running' %}läuft{% else %}fehlgeschlagen ({{ last_sync.message }}){% endif %}
+    {% endif %}
+  </p>
+  <p>Demo-Inventar. Daten: <a href="https://nvd.nist.gov/">NIST National Vulnerability Database</a>,
+     inkl. CISA Known Exploited Vulnerabilities.
+     This product uses the NVD API but is not endorsed or certified by the NVD.</p>
+  <p>sherlock {{ version }}</p>
+</footer>
+</body>
+</html>

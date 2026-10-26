@@ -1,26 +1,21 @@
-# Ansible
 vault.yml
 .vault-pass
 .ansible
 
-# Kubernetes
 kubeconfig/
 
-# Terraform
 .terraform/
 *.tfstate
 *.tfstate.*
 terraform.tfvars
 crash.log
 
-# Python
 __pycache__/
 *.pyc
 .venv/
 
-# Local development
 .env
 *.db
+*.db-*
 
-# Apple
 .DS_Store

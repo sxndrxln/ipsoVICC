@@ -3,6 +3,3 @@ resource "kubernetes_namespace" "sherlock" {
     name = var.namespace
   }
 }
-
-# Remaining resources (Secret, ConfigMap, PVC, Deployment, Service, Ingress, CronJob)
-# follow once the app image exists.

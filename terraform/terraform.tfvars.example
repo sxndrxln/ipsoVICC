@@ -1,3 +1,2 @@
-# Copy to terraform.tfvars (gitignored) and fill in
 app_image   = "sxndrxln/sherlock:0.1.0"
 nvd_api_key = "00000000-0000-0000-0000-000000000000"

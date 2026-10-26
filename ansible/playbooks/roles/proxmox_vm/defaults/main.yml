@@ -1,13 +1,12 @@
 ---
-# Cloud-init template
 proxmox_vm_template_vmid: 9000
 proxmox_vm_template_name: ubuntu-2404-cloudinit
 proxmox_vm_cloud_image_url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
 proxmox_vm_cloud_image_dest: "/var/tmp/{{ proxmox_vm_cloud_image_url | basename }}"
+proxmox_vm_cloud_image_checksum: "sha256:{{ proxmox_vm_cloud_image_url | dirname }}/SHA256SUMS"
 proxmox_vm_template_storage: local-lvm
 proxmox_vm_bridge: vmbr0
 
-# VM defaults
 proxmox_vm_cores: 2
 proxmox_vm_memory: 2048
 proxmox_vm_storage: local-lvm
