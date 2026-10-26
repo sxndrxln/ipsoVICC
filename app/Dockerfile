@@ -8,7 +8,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt \
+    && pip uninstall --yes pip \
+    && rm -rf /usr/local/lib/python3*/ensurepip
 
 COPY sherlock ./sherlock
 
@@ -16,6 +18,9 @@ RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin sherlock \
     && mkdir -p /data /config \
     && chown 10001:10001 /data
 USER 10001
+
+ARG APP_VERSION=dev
+ENV SHERLOCK_VERSION=$APP_VERSION
 
 EXPOSE 8000
 CMD ["uvicorn", "sherlock.main:app", "--host", "0.0.0.0", "--port", "8000", \
