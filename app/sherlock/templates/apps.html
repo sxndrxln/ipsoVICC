@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Applikationen{% endblock %}
+{% block content %}
+<h1>Applikationen</h1>
+<p class="lead">Inventar mit installierter Version. Ein Klick auf die Applikation zeigt ihre offenen Schwachstellen.</p>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Applikation</th><th>Kategorie</th><th>Version</th><th class="num">Offen</th><th class="num">Kritisch</th>
+        <th class="num">Aktiv ausgenutzt</th><th class="num">Mit Patch</th><th class="num">History</th><th>Sync</th></tr>
+  </thead>
+  <tbody>
+  {% for a in apps %}
+    <tr>
+      <td data-label="Applikation"><a href="/?app_id={{ a.id }}">{{ a.name }}</a></td>
+      <td data-label="Kategorie">{{ a.category }}</td>
+      <td data-label="Version">{{ a.version }}</td>
+      <td data-label="Offen" class="num">{{ a.open }}</td>
+      <td data-label="Kritisch" class="num">{{ a.critical }}</td>
+      <td data-label="Aktiv ausgenutzt" class="num">{{ a.kev }}</td>
+      <td data-label="Mit Patch" class="num">{{ a.patchable }}</td>
+      <td data-label="History" class="num"><a href="/history?app_id={{ a.id }}">{{ a.resolved }}</a></td>
+      <td data-label="Sync">
+        {% if a.sync_ok %}<span class="tag tag-ok">{{ (a.last_synced or '')[:10] }}</span>
+        {% else %}<span class="tag tag-kev" title="Letzte NVD-Abfrage fehlgeschlagen, Daten evtl. veraltet">fehlgeschlagen</span>{% endif %}
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="9" class="empty">Noch keine Applikationen synchronisiert.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

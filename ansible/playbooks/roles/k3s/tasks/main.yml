@@ -1,0 +1,12 @@
+---
+- name: Configure k3s
+  ansible.builtin.import_tasks: config.yml
+  tags: [config]
+
+- name: Install k3s
+  ansible.builtin.import_tasks: install.yml
+  tags: [install]
+
+- name: Fetch kubeconfig
+  ansible.builtin.import_tasks: kubeconfig.yml
+  tags: [kubeconfig]

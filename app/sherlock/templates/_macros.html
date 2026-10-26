@@ -1,0 +1,75 @@
+{% macro severity(f) -%}
+  <span class="sev sev-{{ (f.severity or 'none') | lower }}">{{ f.severity or 'n/a' }}</span>
+  {%- if f.score %} <span class="score">{{ '%.1f' | format(f.score) }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro cve_link(f) -%}
+  <a href="https://nvd.nist.gov/vuln/detail/{{ f.cve_id }}" rel="noopener">{{ f.cve_id }}</a>
+  {%- if f.kev %}<span class="tag tag-kev below" title="In CISA KEV seit {{ f.kev_added }}">aktiv ausgenutzt</span>{% endif %}
+{%- endmacro %}
+
+{% macro description(f) -%}
+  {% if f.description %}
+    <details class="desc">
+      <summary><span class="label-show">Anzeigen</span><span class="label-hide">Ausblenden</span></summary>
+      <p>{{ f.description }}</p>
+    </details>
+  {% else %}<span class="muted">–</span>{% endif %}
+{%- endmacro %}
+
+{% macro patch(f) -%}
+  <span class="stack">
+  {% if f.fixed_in %}
+    <span class="tag tag-ok">Patch verfügbar</span>
+    <span class="sub nowrap">behoben in {{ f.fixed_in }}</span>
+  {% elif f.patch_url and f.patch_url.startswith(('http://', 'https://')) %}
+    <a class="tag tag-ok" href="{{ f.patch_url }}" rel="noopener noreferrer">Patch verfügbar</a>
+    <span class="sub nowrap">Details beim Hersteller</span>
+  {% elif f.patch_url %}
+    <span class="tag tag-ok">Patch verfügbar</span>
+  {% else %}
+    <span class="tag tag-none">kein Patch bekannt</span>
+  {% endif %}
+  </span>
+{%- endmacro %}
+
+{% macro dropdown(base, filters, key, label_all, options) -%}
+  {% set current = filters[key] %}
+  {% set ns = namespace(label=label_all) %}
+  {% for value, label in options %}{% if value == current %}{% set ns.label = label %}{% endif %}{% endfor %}
+  <details class="dropdown{% if current %} is-active{% endif %}">
+    <summary>{{ ns.label }}</summary>
+    <div class="menu">
+      <a href="{{ filter_url(base, filters, key, '') }}" {% if not current %}aria-current="true"{% endif %}>{{ label_all }}</a>
+      {% for value, label in options %}
+        <a href="{{ filter_url(base, filters, key, value) }}" {% if value == current %}aria-current="true"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </div>
+  </details>
+{%- endmacro %}
+
+{% macro search(base, filters) -%}
+  <form class="search" method="get" action="{{ base }}" role="search">
+    {% for k, v in filters.items() if k != 'q' and v %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+    <input type="search" name="q" value="{{ filters.q }}" maxlength="100"
+           placeholder="CVE-Nummer oder Stichwort suchen" aria-label="Suche">
+  </form>
+{%- endmacro %}
+
+{% macro reset(filters, base) -%}
+  {% if filters.values() | select | list %}<a class="button" href="{{ base }}">Filter zurücksetzen</a>{% endif %}
+{%- endmacro %}
+
+{% macro count(total, page, pages) -%}
+  <p class="count">{{ total }} {{ "Eintrag" if total == 1 else "Einträge" }}{% if pages > 1 %} · Seite {{ page }} von {{ pages }}{% endif %}</p>
+{%- endmacro %}
+
+{% macro pager(base, filters, page, pages) -%}
+  {% if pages > 1 %}
+    <nav class="pager" aria-label="Seiten">
+      {% if page > 1 %}<a class="button" href="{{ filter_url(base, filters, 'page', page - 1 if page > 2 else '') }}">← Zurück</a>{% endif %}
+      <span class="muted">Seite {{ page }} von {{ pages }}</span>
+      {% if page < pages %}<a class="button" href="{{ filter_url(base, filters, 'page', page + 1) }}">Weiter →</a>{% endif %}
+    </nav>
+  {% endif %}
+{%- endmacro %}

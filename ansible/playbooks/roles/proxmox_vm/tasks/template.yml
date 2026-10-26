@@ -12,6 +12,7 @@
       ansible.builtin.get_url:
         url: "{{ proxmox_vm_cloud_image_url }}"
         dest: "{{ proxmox_vm_cloud_image_dest }}"
+        checksum: "{{ proxmox_vm_cloud_image_checksum }}"
         mode: "0644"
 
     - name: Create template VM with imported disk

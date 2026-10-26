@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Offene Schwachstellen{% endblock %}
+{% block content %}
+<section class="stats">
+  <div><span>{{ apps | sum(attribute='open') }}</span>offen</div>
+  <div><span>{{ apps | sum(attribute='critical') }}</span>kritisch</div>
+  <div><span>{{ apps | sum(attribute='kev') }}</span>aktiv ausgenutzt</div>
+  <div><span>{{ apps | sum(attribute='patchable') }}</span>mit Patch</div>
+</section>
+
+<h1>Offene Schwachstellen</h1>
+<div class="filters">
+  {{ m.search('/', filters) }}
+  {{ m.dropdown('/', filters, 'app_id', 'Alle Applikationen', app_options) }}
+  {{ m.dropdown('/', filters, 'severity', 'Alle Schweregrade',
+                [('CRITICAL', 'Critical'), ('HIGH', 'High'), ('MEDIUM', 'Medium'), ('LOW', 'Low')]) }}
+  {{ m.dropdown('/', filters, 'patch', 'Patch: alle',
+                [('1', 'Patch verfügbar'), ('0', 'Kein Patch bekannt')]) }}
+  <a class="chip{% if filters.kev %} is-active{% endif %}" href="{{ filter_url('/', filters, 'kev', '' if filters.kev else '1') }}"
+     title="Nur Schwachstellen aus dem CISA-Katalog Known Exploited Vulnerabilities">
+    {% if filters.kev %}✓ {% endif %}Nur aktiv ausgenutzte
+  </a>
+  {{ m.reset(filters, '/') }}
+</div>
+
+{{ m.count(total, page, pages) }}
+<div class="table-wrap">
+<table>
+  <colgroup>
+    <col class="col-sev"><col class="col-cve"><col class="col-app"><col><col class="col-patch"><col class="col-date">
+  </colgroup>
+  <thead>
+    <tr><th>Schweregrad</th><th>CVE</th><th>Applikation</th><th>Beschreibung</th><th class="center">Patch</th><th>Veröffentlicht</th></tr>
+  </thead>
+  <tbody>
+  {% for f in findings %}
+    <tr>
+      <td data-label="Schweregrad">{{ m.severity(f) }}</td>
+      <td data-label="CVE">{{ m.cve_link(f) }}</td>
+      <td data-label="Applikation">{{ f.app_name }} <span class="sub">Version {{ f.app_version }}</span></td>
+      <td data-label="Beschreibung">{{ m.description(f) }}</td>
+      <td data-label="Patch">{{ m.patch(f) }}</td>
+      <td data-label="Veröffentlicht">{{ f.published or '' }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="empty">Keine offenen Schwachstellen für diese Auswahl.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{{ m.pager('/', filters, page, pages) }}
+{% endblock %}

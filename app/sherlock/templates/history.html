@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1>History</h1>
+<p class="lead">Schwachstellen, die für die installierte Version nicht mehr zutreffen – nach einem Update
+  oder weil die NVD ihre Daten korrigiert hat.</p>
+<div class="filters">
+  {{ m.search('/history', filters) }}
+  {{ m.dropdown('/history', filters, 'app_id', 'Alle Applikationen', app_options) }}
+  {{ m.reset(filters, '/history') }}
+</div>
+
+{{ m.count(total, page, pages) }}
+<div class="table-wrap">
+<table>
+  <colgroup>
+    <col class="col-sev"><col class="col-cve"><col class="col-app"><col><col class="col-date"><col class="col-patch">
+  </colgroup>
+  <thead>
+    <tr><th>Schweregrad</th><th>CVE</th><th>Applikation</th><th>Beschreibung</th><th>Erkannt in</th><th class="center">Abgeschlossen</th></tr>
+  </thead>
+  <tbody>
+  {% for f in findings %}
+    <tr>
+      <td data-label="Schweregrad">{{ m.severity(f) }}</td>
+      <td data-label="CVE">{{ m.cve_link(f) }}</td>
+      <td data-label="Applikation">{{ f.app_name }}</td>
+      <td data-label="Beschreibung">{{ m.description(f) }}</td>
+      <td data-label="Erkannt in">Version {{ f.opened_version }}</td>
+      <td data-label="Abgeschlossen">
+        <span class="stack">
+        {% if f.resolution == 'updated' %}
+          <span class="tag tag-ok">Update auf {{ f.resolved_version }}</span>
+        {% else %}
+          <span class="tag tag-none">NVD-Korrektur</span>
+        {% endif %}
+          <span class="sub nowrap">{{ (f.resolved_at or '')[:10] }}</span>
+        </span>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="empty">Keine Einträge. Version in apps.yaml erhöhen und Sync laufen lassen.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{{ m.pager('/history', filters, page, pages) }}
+{% endblock %}

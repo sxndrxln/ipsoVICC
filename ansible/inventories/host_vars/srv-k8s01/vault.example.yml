@@ -1,5 +1,4 @@
 ---
-# Copy to vault.yml (gitignored) and encrypt: ansible-vault encrypt inventories/host_vars/srv-k8s01/vault.yml
 vault_proxmox_vm_srvk8s01_ip: 198.51.100.20
 vault_proxmox_vm_nameserver: 192.0.2.53
 vault_ansible_ssh_public_key: "ssh-ed25519 AAAA... ansible"

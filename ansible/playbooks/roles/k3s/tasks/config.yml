@@ -1,0 +1,19 @@
+---
+- name: Create k3s config directory
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    mode: "0755"
+
+- name: Write k3s config
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml
+    mode: "0600"
+  notify: Restart k3s
+
+- name: Create local-path storage directory
+  ansible.builtin.file:
+    path: "{{ k3s_storage_path }}"
+    state: directory
+    mode: "0755"

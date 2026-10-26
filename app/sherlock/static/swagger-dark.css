@@ -1,0 +1,26 @@
+html, body { background: #0f131a; margin: 0; }
+.swagger-ui { filter: invert(88%) hue-rotate(180deg); }
+.swagger-ui .microlight, .swagger-ui img { filter: invert(100%) hue-rotate(180deg); }
+
+.sherlock-bar {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 10px 24px;
+  background: #171c25;
+  border-bottom: 1px solid #2a313c;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.sherlock-bar a { color: #98a2b3; text-decoration: none; }
+.sherlock-bar a:hover { text-decoration: underline; }
+.sherlock-bar .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; color: #e6e9ee; }
+.sherlock-bar .brand:hover { text-decoration: none; }
+.sherlock-bar .brand img { width: 40px; height: 40px; border-radius: 50%; }
+.sherlock-bar nav { display: flex; flex-wrap: wrap; gap: 16px; }
+.sherlock-bar nav a[aria-current="page"] { color: #e6e9ee; font-weight: 600; }
+
+@media (max-width: 900px) {
+  .sherlock-bar { padding-left: 16px; padding-right: 16px; }
+}

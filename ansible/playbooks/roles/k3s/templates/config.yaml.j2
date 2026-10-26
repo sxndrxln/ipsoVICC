@@ -1,0 +1,4 @@
+write-kubeconfig-mode: "0600"
+tls-san:
+  - {{ ansible_host }}
+default-local-storage-path: {{ k3s_storage_path }}
