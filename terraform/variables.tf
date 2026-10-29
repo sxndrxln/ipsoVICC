@@ -1,3 +1,4 @@
+# Values without default (image, API key) are set in terraform.tfvars
 variable "kubeconfig_path" {
   description = "Path to the kubeconfig fetched from the k3s node"
   type        = string
@@ -11,7 +12,7 @@ variable "namespace" {
 }
 
 variable "app_image" {
-  description = "Container image of the app on Docker Hub (incl. tag)"
+  description = "Container image of the app on Docker Hub, pinned by digest"
   type        = string
 }
 
@@ -37,4 +38,10 @@ variable "nvd_api_key" {
   description = "NVD API key (https://nvd.nist.gov/developers/request-an-api-key)"
   type        = string
   sensitive   = true
+}
+
+variable "data_size" {
+  description = "Size of the persistent volume for the SQLite database"
+  type        = string
+  default     = "1Gi"
 }

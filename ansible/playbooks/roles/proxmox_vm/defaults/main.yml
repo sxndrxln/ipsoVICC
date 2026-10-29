@@ -1,4 +1,5 @@
 ---
+# Cloud-init template
 proxmox_vm_template_vmid: 9000
 proxmox_vm_template_name: ubuntu-2404-cloudinit
 proxmox_vm_cloud_image_url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
@@ -7,6 +8,7 @@ proxmox_vm_cloud_image_checksum: "sha256:{{ proxmox_vm_cloud_image_url | dirname
 proxmox_vm_template_storage: local-lvm
 proxmox_vm_bridge: vmbr0
 
+# VM defaults, overridden per host in host_vars. Disk sizes in GB, 0 = no data disk.
 proxmox_vm_cores: 2
 proxmox_vm_memory: 2048
 proxmox_vm_storage: local-lvm
@@ -17,6 +19,7 @@ proxmox_vm_data_mount: /opt
 proxmox_vm_onboot: true
 proxmox_vm_ci_user: ansible
 proxmox_vm_nameserver: ""
+# VLAN settings (gateway, netmask) per VLAN id, the native VLAN gets no tag
 proxmox_vm_native_vlan: 1
 proxmox_vm_vlan: "{{ proxmox_vm_native_vlan }}"
 proxmox_vm_vlans: {}

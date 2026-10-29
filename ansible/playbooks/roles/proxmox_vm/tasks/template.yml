@@ -1,4 +1,5 @@
 ---
+# Built only once: download the Ubuntu cloud image, import it as disk, convert to template
 - name: Check if template already exists
   ansible.builtin.command: "qm config {{ proxmox_vm_template_vmid }}"
   register: proxmox_vm_template_config

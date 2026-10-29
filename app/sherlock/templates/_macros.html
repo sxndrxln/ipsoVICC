@@ -1,3 +1,5 @@
+{# Reusable parts for the tables and the filter bar #}
+
 {% macro severity(f) -%}
   <span class="sev sev-{{ (f.severity or 'none') | lower }}">{{ f.severity or 'n/a' }}</span>
   {%- if f.score %} <span class="score">{{ '%.1f' | format(f.score) }}</span>{% endif %}

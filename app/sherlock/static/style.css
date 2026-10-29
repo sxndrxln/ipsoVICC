@@ -1,5 +1,7 @@
+/* Dark theme for all pages, colors as variables */
 :root {
-  color-scheme: dark;  --bg: #0f131a;
+  color-scheme: dark;
+  --bg: #0f131a;
   --surface: #171c25;
   --surface-2: #1e2531;
   --text: #e6e9ee;
@@ -25,11 +27,13 @@ body {
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--text);
-  overflow-x: hidden;}
+  overflow-x: hidden;
+}
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+/* Header and navigation */
 .topbar {
   display: flex;
   flex-wrap: wrap;
@@ -50,6 +54,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 24px; }
 h1 { font-size: 22px; margin: 24px 0 8px; }
 .lead, .count, .muted { color: var(--muted); }
 
+/* Stat tiles on the start page */
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -64,6 +69,7 @@ h1 { font-size: 22px; margin: 24px 0 8px; }
 }
 .stats span { display: block; font-size: 28px; font-weight: 700; color: var(--text); }
 
+/* Filter bar */
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
 
 .dropdown summary, .chip, .button, .search input {
@@ -83,6 +89,7 @@ h1 { font-size: 22px; margin: 24px 0 8px; }
 .search input { width: 100%; }
 .search input::placeholder { color: var(--muted); }
 
+/* Dropdowns built from <details>, see dropdown.js */
 .dropdown { position: relative; }
 .dropdown summary { list-style: none; cursor: pointer; white-space: nowrap; }
 .dropdown summary::-webkit-details-marker { display: none; }
@@ -108,6 +115,7 @@ h1 { font-size: 22px; margin: 24px 0 8px; }
 .dropdown .menu a[aria-current="true"] { color: var(--accent); font-weight: 600; }
 .dropdown .menu a[aria-current="true"]::before { content: "✓ "; }
 
+/* Tables */
 .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th, td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
@@ -122,6 +130,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .col-patch { width: 215px; }
 .col-date { width: 120px; }
 
+/* Collapsible description */
 .desc summary { cursor: pointer; color: var(--accent); list-style: none; }
 .desc summary::-webkit-details-marker { display: none; }
 .desc summary::before { content: "▸ "; }
@@ -129,6 +138,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .desc[open] summary .label-show, .desc:not([open]) summary .label-hide { display: none; }
 .desc p { margin: 6px 0 0; }
 
+/* Severity and tags */
 .sev { font-weight: 700; font-size: 12px; letter-spacing: .03em; }
 .sev-critical { color: var(--critical); }
 .sev-high { color: var(--high); }
@@ -152,6 +162,7 @@ tbody tr:last-child td { border-bottom: 0; }
 footer { max-width: 1280px; margin: 0 auto; padding: 8px 24px 32px; color: var(--muted); font-size: 13px; }
 footer p { margin: 4px 0; }
 
+/* Small screens: table rows become cards */
 @media (max-width: 900px) {
   .topbar, main, footer { padding-left: 16px; padding-right: 16px; }
   .table-wrap { background: none; border: 0; }
@@ -175,4 +186,5 @@ footer p { margin: 4px 0; }
   .stack { display: inline-flex; }
 }
 
+/* Pagination */
 .pager { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; margin: 16px 0; }

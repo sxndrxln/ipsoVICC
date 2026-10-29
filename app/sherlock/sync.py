@@ -1,3 +1,5 @@
+# Sync job, runs as Kubernetes CronJob (python -m sherlock.sync).
+# Queries the NVD for every app in the inventory and updates the database.
 import logging
 import sqlite3
 import sys
@@ -15,6 +17,7 @@ def _now() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
 
 
+# CVEs of all CPEs of an app, without duplicates
 def fetch_vulnerabilities(client: NvdClient, app: App) -> dict[str, Vulnerability]:
     match_strings = app.match_strings()
     prefixes = [cpe_prefix(m) for m in match_strings]
@@ -25,6 +28,7 @@ def fetch_vulnerabilities(client: NvdClient, app: App) -> dict[str, Vulnerabilit
     return found
 
 
+# Saves the result of one app. Found CVEs are inserted or reopened.
 def store(conn: sqlite3.Connection, app: App, found: dict[str, Vulnerability]) -> tuple[int, int]:
     now = _now()
     row = conn.execute("SELECT version FROM apps WHERE id = ?", (app.id,)).fetchone()
@@ -52,6 +56,8 @@ def store(conn: sqlite3.Connection, app: App, found: dict[str, Vulnerability]) -
             ),
         )
 
+    # Open CVEs that were not found anymore go to the history:
+    # "updated" if the version in apps.yaml changed, otherwise the NVD changed its data
     still_open = [r["cve_id"] for r in conn.execute(
         "SELECT cve_id FROM findings WHERE app_id = ? AND status = 'open'", (app.id,)
     )]
@@ -76,6 +82,7 @@ def store(conn: sqlite3.Connection, app: App, found: dict[str, Vulnerability]) -
     return len(found), len(gone)
 
 
+# Query failed: keep the previous findings and only flag the app
 def mark_failed(conn: sqlite3.Connection, app: App) -> None:
     conn.execute(
         """
@@ -86,6 +93,7 @@ def mark_failed(conn: sqlite3.Connection, app: App) -> None:
     )
 
 
+# One complete sync run, logged in sync_runs. Exit code 1 if an app failed.
 def run() -> int:
     apps = load_apps(config.APPS_FILE)
     init_db(config.DB_PATH)
@@ -111,6 +119,7 @@ def run() -> int:
                 log.info("%s %s: %d open, %d moved to history", app.id, app.version, open_count, resolved)
             conn.commit()
 
+        # Remove apps that are no longer in the inventory
         ids = [app.id for app in apps]
         conn.execute(f"DELETE FROM apps WHERE id NOT IN ({','.join('?' * len(ids))})", ids)
         completed = True

@@ -1,4 +1,5 @@
 ---
+# k3s reads its settings from /etc/rancher/k3s/config.yaml
 - name: Create k3s config directory
   ansible.builtin.file:
     path: /etc/rancher/k3s

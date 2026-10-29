@@ -1,3 +1,4 @@
+# Weekly update PRs for actions, base image and Python packages
 version: 2
 updates:
   - package-ecosystem: github-actions

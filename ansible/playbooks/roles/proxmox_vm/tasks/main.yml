@@ -1,4 +1,5 @@
 ---
+# Template on the Proxmox host, VMs for the hosts in group vms
 - name: Build cloud-init template
   ansible.builtin.import_tasks: template.yml
   when: "'proxmox' in group_names"

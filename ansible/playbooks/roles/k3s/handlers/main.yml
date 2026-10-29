@@ -1,4 +1,5 @@
 ---
+# After changes to config.yaml
 - name: Restart k3s
   ansible.builtin.service:
     name: k3s

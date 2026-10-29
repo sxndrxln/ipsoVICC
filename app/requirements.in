@@ -1,3 +1,5 @@
+# Direct dependencies. requirements.txt is generated from this file:
+# pip-compile --allow-unsafe --generate-hashes --strip-extras requirements.in
 fastapi==0.162.0
 uvicorn==0.54.0
 jinja2==3.1.6

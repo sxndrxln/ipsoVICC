@@ -1,2 +1,3 @@
-app_image   = "sxndrxln/sherlock:0.1.0"
+# Copy to terraform.tfvars and fill in
+app_image   = "docker.io/sxndrxln/sherlock@sha256:de9bdc2b668ba1640d00d1e28204e1b60fdd03ccb470d24ec4ac542fdf37d58f" # 0.1.1
 nvd_api_key = "00000000-0000-0000-0000-000000000000"

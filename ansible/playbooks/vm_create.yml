@@ -1,4 +1,6 @@
 ---
+# 1. Build the cloud-init template on the Proxmox host (only once)
+# 2. Clone and configure the VMs via the Proxmox API
 - name: Download the latest Ubuntu 24.04 cloud image
   hosts: proxmox
   become: true

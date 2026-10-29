@@ -1,3 +1,4 @@
+// Filter dropdowns: only one open at a time, close on click outside or Escape
 const dropdowns = () => document.querySelectorAll("details.dropdown");
 
 dropdowns().forEach((dropdown) => {

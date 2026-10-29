@@ -1,4 +1,5 @@
 ---
+# Installs k3s on the VM and saves the kubeconfig to kubeconfig/
 - name: Install k3s
   hosts: k3s
   become: true

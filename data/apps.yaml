@@ -1,22 +1,27 @@
+# Demo inventory, deployed as ConfigMap by Terraform.
+# version: installed version. Execute terraform apply after a change starts a sync right away,
+#          CVEs fixed by the new version move to the history.
+# cpes:    CPE names for the NVD query, {version} is replaced by the version
+# keyword: optional, narrows the search (Hyper-V within Windows Server)
 apps:
   - id: wordpress
     name: WordPress
     category: CMS
-    version: "6.4.1"
+    version: "7.1.4"
     cpes:
       - "cpe:2.3:a:wordpress:wordpress:{version}"
 
   - id: adguard-home
     name: AdGuard Home
     category: DNS filter
-    version: "0.107.40"
+    version: "0.107.51"
     cpes:
       - "cpe:2.3:a:adguard:adguardhome:{version}"
 
   - id: hyper-v
     name: Hyper-V (Windows Server 2019)
     category: Hypervisor
-    version: "10.0.17763.4974"
+    version: "12.0"
     cpes:
       - "cpe:2.3:o:microsoft:windows_server_2019:{version}"
     keyword: Hyper-V
@@ -24,7 +29,7 @@ apps:
   - id: nginx
     name: nginx
     category: Web server
-    version: "1.24.0"
+    version: "1.31.8"
     cpes:
       - "cpe:2.3:a:f5:nginx:{version}"
       - "cpe:2.3:a:f5:nginx_open_source:{version}"
@@ -32,28 +37,28 @@ apps:
   - id: mongodb
     name: MongoDB
     category: Database
-    version: "6.0.5"
+    version: "9.0.4"
     cpes:
       - "cpe:2.3:a:mongodb:mongodb:{version}"
 
   - id: apache-httpd
     name: Apache HTTP Server
     category: Web server
-    version: "2.4.57"
+    version: "2.4.69"
     cpes:
       - "cpe:2.3:a:apache:http_server:{version}"
 
   - id: openssh
     name: OpenSSH
     category: Remote access
-    version: "9.3"
+    version: "10.6"
     cpes:
       - "cpe:2.3:a:openbsd:openssh:{version}"
 
   - id: postgresql
     name: PostgreSQL
     category: Database
-    version: "15.4"
+    version: "18.6"
     cpes:
       - "cpe:2.3:a:postgresql:postgresql:{version}"
 
@@ -67,20 +72,20 @@ apps:
   - id: jenkins
     name: Jenkins
     category: CI/CD
-    version: "2.426"
+    version: "2.588"
     cpes:
       - "cpe:2.3:a:jenkins:jenkins:{version}"
 
   - id: nextcloud
     name: Nextcloud Server
     category: Collaboration
-    version: "27.0.0"
+    version: "35.0.2"
     cpes:
       - "cpe:2.3:a:nextcloud:nextcloud_server:{version}"
 
   - id: gitlab
     name: GitLab
     category: DevOps platform
-    version: "16.5.0"
+    version: "19.5.1"
     cpes:
       - "cpe:2.3:a:gitlab:gitlab:{version}:*:*:*:community"
