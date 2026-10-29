@@ -1,7 +1,9 @@
+/* Dark look for the Swagger UI on /docs: invert colors, images and code back */
 html, body { background: #0f131a; margin: 0; }
 .swagger-ui { filter: invert(88%) hue-rotate(180deg); }
 .swagger-ui .microlight, .swagger-ui img { filter: invert(100%) hue-rotate(180deg); }
 
+/* Site header on top of the Swagger page */
 .sherlock-bar {
   box-sizing: border-box;
   display: flex;

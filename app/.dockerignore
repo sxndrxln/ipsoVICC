@@ -1,3 +1,4 @@
+# Keep local files out of the image
 .venv
 **/__pycache__
 **/*.pyc

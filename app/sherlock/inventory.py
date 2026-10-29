@@ -4,6 +4,7 @@ from pathlib import Path
 import yaml
 
 
+# One application from data/apps.yaml
 @dataclass(frozen=True)
 class App:
     id: str
@@ -13,10 +14,12 @@ class App:
     cpes: list[str] = field(default_factory=list)
     keyword: str | None = None
 
+    # CPE names with the installed version filled in
     def match_strings(self) -> list[str]:
         return [cpe.replace("{version}", self.version) for cpe in self.cpes]
 
 
+# Reads the inventory and stops early on missing fields or duplicate ids
 def load_apps(path: Path) -> list[App]:
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     apps: list[App] = []

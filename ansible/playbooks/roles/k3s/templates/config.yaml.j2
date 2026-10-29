@@ -1,3 +1,4 @@
+{# k3s server settings. tls-san makes the API certificate valid for the VM address. -#}
 write-kubeconfig-mode: "0600"
 tls-san:
   - {{ ansible_host }}

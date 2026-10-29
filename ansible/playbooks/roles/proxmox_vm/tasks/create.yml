@@ -9,11 +9,13 @@
       must be defined in proxmox_vm_vlans.
     quiet: true
 
+# Gateway and netmask from the VLAN, the native VLAN is sent without tag
 - name: Derive network settings from VLAN
   ansible.builtin.set_fact:
     proxmox_vm_net: "{{ proxmox_vm_vlans[proxmox_vm_vlan | int] }}"
     proxmox_vm_tag: "{{ omit if (proxmox_vm_vlan | int) == (proxmox_vm_native_vlan | int) else (proxmox_vm_vlan | int) }}"
 
+# Do not touch a VMID that belongs to another VM
 - name: Look up existing VM with this VMID
   community.proxmox.proxmox_vm_info:
     api_host: "{{ proxmox_api_host }}"
@@ -33,6 +35,7 @@
     fail_msg: "VMID {{ proxmox_vm_vmid }} is already used by {{ proxmox_vm_existing.proxmox_vms[0].name | default('?') }}"
     quiet: true
 
+# Only for new VMs, runs against the Proxmox API from the control machine
 - name: Clone and configure VM
   when: proxmox_vm_existing.proxmox_vms | length == 0
   delegate_to: localhost
@@ -53,7 +56,7 @@
         that:
           - proxmox_vm_template.proxmox_vms | length > 0
         fail_msg: >-
-          Template {{ proxmox_vm_template_vmid }} does not exist —
+          Template {{ proxmox_vm_template_vmid }} does not exist,
           run the playbook without tags or with --tags template first.
         quiet: true
 
@@ -144,6 +147,7 @@
   delegate_to: localhost
   become: false
 
+# From here on directly on the new VM via SSH
 - name: Wait until cloud-init has created the user and SSH is up
   ansible.builtin.wait_for_connection:
     timeout: 300
@@ -154,6 +158,7 @@
   changed_when: false
   failed_when: proxmox_vm_cloud_init.rc not in [0, 2]
 
+# Format the second disk and mount it (default /opt)
 - name: Prepare data disk
   when: proxmox_vm_data_disk | int > 0
   become: true

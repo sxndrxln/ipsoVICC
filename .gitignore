@@ -1,19 +1,26 @@
+# Ansible secrets
 vault.yml
 .vault-pass
 .ansible
 
+# Kubeconfig fetched by the k3s role
 kubeconfig/
 
+# Terraform state and variables (contain secrets)
 .terraform/
 *.tfstate
 *.tfstate.*
 terraform.tfvars
+tfplan
+*.tfplan
 crash.log
 
+# Python
 __pycache__/
 *.pyc
 .venv/
 
+# Local app settings and database
 .env
 *.db
 *.db-*

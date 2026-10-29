@@ -1,4 +1,5 @@
 ---
+# k3s VM. Disk sizes in GB, the data disk is mounted on /opt.
 proxmox_vm_vmid: 120
 proxmox_vm_vlan: 50
 proxmox_vm_cores: 2

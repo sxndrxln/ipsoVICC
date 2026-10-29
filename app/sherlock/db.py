@@ -1,6 +1,9 @@
 import sqlite3
 from pathlib import Path
 
+# apps: inventory state of the last sync
+# findings: one row per app and CVE, status open or resolved (history)
+# sync_runs: log of all sync runs
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS apps (
     id          TEXT PRIMARY KEY,
@@ -43,6 +46,8 @@ CREATE TABLE IF NOT EXISTS sync_runs (
 """
 
 
+# Creates the database and tables if missing.
+# WAL mode lets the web pod read while the sync job writes.
 def init_db(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(path, timeout=30) as conn:
@@ -51,6 +56,7 @@ def init_db(path: Path) -> None:
     conn.close()
 
 
+# Rows can be accessed by column name
 def connect(path: Path, timeout: float = 30) -> sqlite3.Connection:
     conn = sqlite3.connect(path, timeout=timeout)
     conn.row_factory = sqlite3.Row

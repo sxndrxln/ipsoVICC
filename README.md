@@ -37,7 +37,7 @@ set -a; source .env; set +a
 .venv/bin/uvicorn sherlock.main:app        # http://127.0.0.1:8000, API-Doku unter /docs
 ```
 
-Abhängigkeiten werden in `app/requirements.in` gepflegt; `requirements.txt` (alle Pakete inkl. Hashes) wird daraus mit `pip-compile --generate-hashes` erzeugt.
+Abhängigkeiten werden in `app/requirements.in` gepflegt; `requirements.txt` (alle Pakete inkl. Hashes) wird daraus mit `pip-compile --allow-unsafe --generate-hashes --strip-extras requirements.in` erzeugt (im Ordner `app/`).
 
 ## Image-Build
-Ein veröffentlichtes GitHub-Release (z.B. Tag `v0.1.0`) baut das Image, prüft es mit Grype auf Schwachstellen und lädt es als `sxndrxln/sherlock:0.1.0` und `latest` nach Docker Hub.
+Ein veröffentlichtes GitHub-Release (z.B. Tag `v1.0.0`) baut das Image, prüft es mit Grype und Docker Scout auf Schwachstellen und lädt es als `sxndrxln/sherlock:1.0.0` und `latest` nach Docker Hub.

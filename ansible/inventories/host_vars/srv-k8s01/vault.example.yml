@@ -1,4 +1,5 @@
 ---
+# Example values. Copy to vault.yml and encrypt with ansible-vault.
 vault_proxmox_vm_srvk8s01_ip: 198.51.100.20
 vault_proxmox_vm_nameserver: 192.0.2.53
 vault_ansible_ssh_public_key: "ssh-ed25519 AAAA... ansible"

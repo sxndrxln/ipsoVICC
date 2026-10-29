@@ -1,3 +1,5 @@
+# Web app: HTML pages (open, history, apps) and a read-only REST API.
+# Only reads the SQLite database, the data comes from sync.py.
 import base64
 import hashlib
 import math
@@ -22,6 +24,7 @@ from sherlock.db import connect, init_db
 
 BASE_DIR = Path(__file__).parent
 
+# Severity as number for sorting
 SEVERITY_SQL = """CASE f.severity WHEN 'CRITICAL' THEN 4 WHEN 'HIGH' THEN 3
                   WHEN 'MEDIUM' THEN 2 WHEN 'LOW' THEN 1 ELSE 0 END"""
 Severity = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW"]
@@ -29,11 +32,13 @@ SEARCH_MAX_LENGTH = 100
 PAGE_SIZE = 100
 API_MAX_LIMIT = 500
 
+# Swagger UI for /docs comes from a CDN, pinned and checked with SRI hashes
 SWAGGER_VERSION = "5.34.0"
 SWAGGER_CDN = f"https://cdn.jsdelivr.net/npm/swagger-ui-dist@{SWAGGER_VERSION}"
 SWAGGER_JS_SRI = "sha384-9Td7MKiIr2S83E1kZyyVi8KdJw/S8CpAvu0llLyMeg0xq/hDGiZJfVn0fV4llCmK"
 SWAGGER_CSS_SRI = "sha384-4c3vsE5f+trhFyHrFrLM1fFGUn531NIaC7dcqEWIJdoRQJ5CkJbSuSCwXLpaS1KF"
 
+# Content Security Policy for all pages except /docs
 CSP_SITE = (
     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; "
     "connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; "
@@ -41,6 +46,7 @@ CSP_SITE = (
 )
 
 
+# Create the database on startup so the pages work before the first sync
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db(config.DB_PATH)
@@ -63,6 +69,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
+# Link that changes one filter and keeps the others, used in the templates
 def filter_url(base: str, filters: dict, key: str, value: str | int) -> str:
     params = {k: v for k, v in {**filters, key: value}.items() if v}
     return f"{base}?{urlencode(params)}" if params else base
@@ -71,6 +78,8 @@ def filter_url(base: str, filters: dict, key: str, value: str | int) -> str:
 templates.env.globals["filter_url"] = filter_url
 
 
+# Builds the /docs page once at startup: SRI attributes, dark style and site header.
+# Swagger's inline scripts are allowed in the CSP by their hash.
 def _build_docs_page() -> tuple[str, str]:
     html = get_swagger_ui_html(
         openapi_url="/openapi.json",
@@ -96,6 +105,7 @@ def _build_docs_page() -> tuple[str, str]:
         ("</head>", f'<link rel="stylesheet" href="/static/swagger-dark.css?v={__version__}"></head>'),
         ("<body>", f"<body>{header}"),
     ]
+    # Fails on startup if a FastAPI update changes the generated HTML
     for old, new in replacements:
         if html.count(old) != 1:
             raise RuntimeError(f"Unexpected Swagger HTML, cannot patch {old!r}")
@@ -117,6 +127,7 @@ def _build_docs_page() -> tuple[str, str]:
 DOCS_HTML, CSP_DOCS = _build_docs_page()
 
 
+# Security headers on every response
 @app.middleware("http")
 async def security_headers(request: Request, call_next) -> Response:
     response = await call_next(request)
@@ -129,6 +140,7 @@ async def security_headers(request: Request, call_next) -> Response:
     return response
 
 
+# One database connection per request
 def get_db() -> Iterator[sqlite3.Connection]:
     conn = connect(config.DB_PATH, timeout=5)
     try:
@@ -140,6 +152,8 @@ def get_db() -> Iterator[sqlite3.Connection]:
 Db = Annotated[sqlite3.Connection, Depends(get_db)]
 
 
+# WHERE clause from the filters, values always as SQL parameters.
+# In the search, % and _ are escaped and match literally.
 def _findings_where(
     status: str,
     app_id: str | None = None,
@@ -169,6 +183,8 @@ def _findings_where(
     return " AND ".join(where), params
 
 
+# One page of findings plus total count.
+# Open: actively exploited and most severe first, history: newest first.
 def query_findings(db: sqlite3.Connection, status: str, *, limit: int, offset: int = 0,
                    **filters) -> tuple[list[dict], int]:
     where, params = _findings_where(status, **filters)
@@ -186,6 +202,7 @@ def query_findings(db: sqlite3.Connection, status: str, *, limit: int, offset: i
     return [dict(r) for r in rows], total
 
 
+# Apps with counters for the apps page and the stats on the start page
 def query_apps(db: sqlite3.Connection) -> list[dict]:
     rows = db.execute(
         """
@@ -203,11 +220,13 @@ def query_apps(db: sqlite3.Connection) -> list[dict]:
              for k, v in dict(r).items()} for r in rows]
 
 
+# Latest sync run, shown in the footer
 def last_sync(db: sqlite3.Connection) -> dict | None:
     row = db.execute("SELECT * FROM sync_runs ORDER BY id DESC LIMIT 1").fetchone()
     return dict(row) if row else None
 
 
+# Renders a page with the data every page needs
 def render(request: Request, db: sqlite3.Connection, name: str, **context) -> HTMLResponse:
     apps = query_apps(db)
     return templates.TemplateResponse(
@@ -223,15 +242,18 @@ def render(request: Request, db: sqlite3.Connection, name: str, **context) -> HT
     )
 
 
+# "1"/"0" from the URL to True/False, empty means no filter
 def _flag(value: str | None) -> bool | None:
     return {"1": True, "0": False}.get(value or "")
 
 
+# Shortens user input, with allowed only known values pass
 def _clean(value: str | None, allowed: tuple[str, ...] | None = None) -> str:
     value = (value or "").strip()[:SEARCH_MAX_LENGTH]
     return value if allowed is None or value in allowed else ""
 
 
+# Pagination, a page number that is too high shows the last page
 def _paged(db: sqlite3.Connection, status: str, filters: dict, page: int, **query) -> dict:
     _, total = query_findings(db, status, limit=0, **query)
     pages = max(1, math.ceil(total / PAGE_SIZE))
@@ -240,6 +262,7 @@ def _paged(db: sqlite3.Connection, status: str, filters: dict, page: int, **quer
     return {"findings": findings, "total": total, "page": page, "pages": pages, "filters": filters}
 
 
+# HTML pages
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def page_open(request: Request, db: Db, app_id: str | None = None, severity: str | None = None,
               kev: str | None = None, patch: str | None = None, q: str | None = None,
@@ -274,12 +297,14 @@ def api_docs() -> HTMLResponse:
     return HTMLResponse(DOCS_HTML)
 
 
+# Used by the Kubernetes readiness and liveness probes
 @app.get("/healthz", include_in_schema=False)
 def healthz(db: Db) -> dict:
     db.execute("SELECT 1")
     return {"status": "ok"}
 
 
+# Response models of the API, also shown in /docs
 class AppOut(BaseModel):
     id: str
     name: str
@@ -323,6 +348,7 @@ class SyncRunOut(BaseModel):
     message: str | None
 
 
+# REST API, read-only
 @app.get("/api/apps", response_model=list[AppOut], tags=["api"])
 def api_apps(db: Db):
     return query_apps(db)
@@ -345,10 +371,12 @@ def api_vulnerabilities(
 ):
     rows, total = query_findings(db, status, limit=limit, offset=offset, app_id=app_id,
                                  severity=severity, kev=kev, patch=patch, q=q)
+    # Total number of matches for paging
     response.headers["X-Total-Count"] = str(total)
     return rows
 
 
+# List because a CVE can affect several apps
 @app.get("/api/vulnerabilities/{cve_id}", response_model=list[VulnerabilityOut], tags=["api"])
 def api_vulnerability(cve_id: Annotated[str, PathParam(max_length=30, pattern=r"^[A-Za-z0-9-]+$")], db: Db):
     rows = db.execute(

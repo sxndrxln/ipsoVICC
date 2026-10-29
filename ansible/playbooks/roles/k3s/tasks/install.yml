@@ -5,6 +5,7 @@
   changed_when: false
   failed_when: false
 
+# Only if k3s is missing or another version is installed
 - name: Install k3s
   when: k3s_installed_version.rc != 0 or k3s_version not in k3s_installed_version.stdout
   block:
@@ -20,6 +21,7 @@
         INSTALL_K3S_VERSION: "{{ k3s_version }}"
       changed_when: true
 
+# Restart now if the config changed, before waiting for the node
 - name: Apply pending k3s restart
   ansible.builtin.meta: flush_handlers
 

@@ -6,18 +6,22 @@ import httpx
 
 from sherlock import __version__
 
+# Max. results per request allowed by the NVD API
 PAGE_SIZE = 2000
 
+# Seconds between requests. NVD limit: 5 requests per 30s without key, 50 with key
 DELAY_WITHOUT_KEY = 6.5
 DELAY_WITH_KEY = 3.0
 
 SEVERITY_ORDER = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1}
 
 
+# NVD not reachable or answer incomplete
 class NvdError(Exception):
     pass
 
 
+# The fields of a CVE that end up in the database
 @dataclass
 class Vulnerability:
     cve_id: str
@@ -31,10 +35,12 @@ class Vulnerability:
     kev_added: str | None
 
     @property
+    # Patch available = fixed version known or a reference tagged "Patch"
     def patch_available(self) -> bool:
         return bool(self.fixed_in or self.patch_url)
 
 
+# Small client for the NVD CVE API 2.0
 class NvdClient:
     def __init__(self, api_url: str, api_key: str = "") -> None:
         headers = {"User-Agent": f"sherlock/{__version__}"}
@@ -46,6 +52,7 @@ class NvdClient:
     def close(self) -> None:
         self._client.close()
 
+    # Waits before every request because of the rate limit, up to 4 attempts
     def _get(self, params: dict) -> dict:
         for attempt in range(4):
             time.sleep(self._delay)
@@ -60,6 +67,8 @@ class NvdClient:
             time.sleep(10 * (attempt + 1))
         raise NvdError(error)
 
+    # All CVEs affecting this CPE and version, fetched page by page.
+    # keyword narrows broad CPEs down, e.g. Windows Server to Hyper-V.
     def cves_for(self, match_string: str, keyword: str | None = None) -> list[dict]:
         params = {"virtualMatchString": match_string, "resultsPerPage": PAGE_SIZE}
         if keyword:
@@ -76,15 +85,18 @@ class NvdClient:
             start += data.get("resultsPerPage", 0)
             if not data.get("resultsPerPage") or start >= total:
                 break
+        # A partial result would wrongly move CVEs to the history
         if len(records) != total:
             raise NvdError(f"Incomplete response for {match_string}: {len(records)} of {total} records")
         return records
 
 
+# Makes versions comparable, e.g. 1.10 > 1.9
 def version_key(version: str) -> tuple:
     return tuple((1, int(t)) if t.isdigit() else (0, t) for t in re.findall(r"\d+|[a-z]+", version.lower()))
 
 
+# Is the version inside the affected range of a CPE match?
 def _in_range(match: dict, version: str) -> bool:
     key = version_key(version)
     if (v := match.get("versionStartIncluding")) and key < version_key(v):
@@ -98,6 +110,7 @@ def _in_range(match: dict, version: str) -> bool:
     return True
 
 
+# Newest CVSS version available, preferably the NVD's own rating (Primary)
 def _cvss(cve: dict) -> tuple[str | None, float | None]:
     metrics = cve.get("metrics", {})
     for name in ("cvssMetricV40", "cvssMetricV31", "cvssMetricV30", "cvssMetricV2"):
@@ -109,6 +122,8 @@ def _cvss(cve: dict) -> tuple[str | None, float | None]:
     return None, None
 
 
+# Converts a raw NVD record. fixed_in is the lowest version that fixes the CVE
+# for the installed version. KEV (actively exploited) comes from the cisaExploit fields.
 def parse(cve: dict, cpe_prefixes: list[str], version: str) -> Vulnerability:
     fixed: list[str] = []
     for config in cve.get("configurations", []):
@@ -145,5 +160,6 @@ def parse(cve: dict, cpe_prefixes: list[str], version: str) -> Vulnerability:
     )
 
 
+# Vendor and product part of a CPE, e.g. "cpe:2.3:a:f5:nginx:"
 def cpe_prefix(match_string: str) -> str:
     return ":".join(match_string.split(":")[:5]) + ":"
