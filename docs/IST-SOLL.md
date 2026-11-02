@@ -12,4 +12,4 @@ Kept up to date during implementation; becomes the IST/SOLL chapter of the docum
 | Container image | Dockerfile, GitHub Actions → Docker Hub (public) | built locally<br>built by GitHub Actions | 2026-10-26<br>2026-10-26 |
 | Workloads | Terraform: Namespace, Secret, ConfigMap, PVC, Deployment, Service, Ingress, CronJob | done | 2026-10-29 |
 | Publication | NPM → sherlock.beste.host, TLS (Let's Encrypt) | done | 2026-10-29 |
-| Scaling / HA | Theory only (single node, SQLite) | not planned | Covered in reflection |
+| Thesis | Finished and signed thesis | done | 2026-11-02 |

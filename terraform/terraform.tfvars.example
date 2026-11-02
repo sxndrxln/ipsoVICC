@@ -1,3 +1,6 @@
 # Copy to terraform.tfvars and fill in
-app_image   = "docker.io/sxndrxln/sherlock@sha256:de9bdc2b668ba1640d00d1e28204e1b60fdd03ccb470d24ec4ac542fdf37d58f" # 0.1.1
-nvd_api_key = "00000000-0000-0000-0000-000000000000"
+kubeconfig_path = "../kubeconfig/srv-k8s01.yaml" # If ansible is used, the filepath is the same but the filename is the hostname of the K3s-VM. If not used with Ansible, create own file and define filepath and filename here.
+app_image       = "docker.io/sxndrxln/sherlock@sha256:3c82e2e886a320640b4fb94cbc726241c905fc56332b45a17e679a482b0d120f" # 1.0.0
+app_host        = "sherlock.beste.host" # Hostname need to be accessible over own internal DNS-Entry or definition in the local hosts-file. IP-Address will not work as value for the variable
+# Optional, without a key the sync runs slower
+nvd_api_key     = ""

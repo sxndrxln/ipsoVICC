@@ -18,7 +18,8 @@ Die Anwendung läuft containerisiert auf einem Single-Node-k3s-Cluster in einer 
 ## Voraussetzungen
 - Ansible (core ≥ 2.17) mit `ansible-galaxy collection install -r ansible/requirements.yml`, Python-Pakete `proxmoxer` und `requests`
 - Terraform ≥ 1.6
-- Proxmox VE mit API-Zugang, NVD-API-Key (kostenlos)
+- Proxmox VE mit API-Zugang
+- Optional: NVD-API-Key (kostenlos), ohne Key läuft der Abgleich langsamer
 
 ## Secrets
 Es werden nur Vorlagen eingecheckt:
