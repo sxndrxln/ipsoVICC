@@ -1,4 +1,4 @@
-# Values without default (image, API key) are set in terraform.tfvars
+# Values without default (image) are set in terraform.tfvars
 variable "kubeconfig_path" {
   description = "Path to the kubeconfig fetched from the k3s node"
   type        = string
@@ -35,8 +35,9 @@ variable "sync_schedule" {
 }
 
 variable "nvd_api_key" {
-  description = "NVD API key (https://nvd.nist.gov/developers/request-an-api-key)"
+  description = "Optional NVD API key, without one the sync runs slower (https://nvd.nist.gov/developers/request-an-api-key)"
   type        = string
+  default     = ""
   sensitive   = true
 }
 
